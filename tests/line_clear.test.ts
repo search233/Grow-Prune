@@ -18,11 +18,11 @@ describe('CollisionEngine - Symbiotic Line Clear', () => {
     // Snake body occupies columns 7, 8, 9 on row 19!
     // Head is at (7, 18), body is at (7, 19), (8, 19), (9, 19), and tail at (9, 18)
     const snake = new Snake([
-      { x: 7, y: 18 }, // head (not on cleared line)
+      { x: 7, y: 17 }, // head (not on cleared line)
+      { x: 7, y: 18 }, // body
       { x: 7, y: 19 }, // body on line 19
       { x: 8, y: 19 }, // body on line 19
-      { x: 9, y: 19 }, // body on line 19
-      { x: 9, y: 18 }  // tail
+      { x: 9, y: 19 }  // tail on line 19 (TRIGGERS DELAYED CLEAR)
     ]);
 
     const result = CollisionEngine.checkSymbioticLineClear(grid, snake);
@@ -31,8 +31,8 @@ describe('CollisionEngine - Symbiotic Line Clear', () => {
     expect(result.clearedRows).toEqual([19]);
 
     // 2. Snake should be severed starting from the first segment on row 19 (index 1)
-    expect(snake.length).toBe(1); // Only head remains!
-    expect(result.severedSegments.length).toBe(4);
+    expect(snake.length).toBe(2); // Head and one body segment remain
+    expect(result.severedSegments.length).toBe(3);
 
     // 3. Block that was at (0, 18) should now have dropped down to (0, 19)
     expect(grid.get(0, 19)).toBe(CellType.BLOCK);

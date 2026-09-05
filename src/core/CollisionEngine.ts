@@ -122,17 +122,39 @@ export class CollisionEngine {
     for (let r = 0; r < grid.rows; r++) {
       let isLineFull = true;
 
+      let hasSnakeBody = false;
+      let hasTail = false;
+      const tail = snakeBody.length > 0 ? snakeBody[snakeBody.length - 1] : null;
+
       for (let c = 0; c < grid.cols; c++) {
         const isBlock = (grid.get(c, r) === CellType.BLOCK);
-        const isSnakeBody = snakeBody.some(s => s.x === c && s.y === r);
+        
+        let isSnakeBodyCell = false;
+        let isTailCell = false;
 
-        if (!isBlock && !isSnakeBody) {
+        for (const s of snakeBody) {
+          if (s.x === c && s.y === r) {
+            isSnakeBodyCell = true;
+            if (tail && s.x === tail.x && s.y === tail.y) {
+              isTailCell = true;
+            }
+          }
+        }
+
+        if (!isBlock && !isSnakeBodyCell) {
           isLineFull = false;
           break;
         }
+
+        if (isSnakeBodyCell) {
+          hasSnakeBody = true;
+          if (isTailCell) {
+            hasTail = true;
+          }
+        }
       }
 
-      if (isLineFull) {
+      if (isLineFull && (!hasSnakeBody || hasTail)) {
         clearedRows.push(r);
       }
     }

@@ -60,11 +60,31 @@ function bootstrap(): void {
   // 5. 游戏说明展示逻辑 (预先声明 startScreen 引用)
   let startScreen: StartScreen;
 
+  const pauseOverlay = document.getElementById('pause-overlay')!;
+
+  const togglePause = () => {
+    if (gameState.status === GameStatus.RUNNING) {
+      gameState.status = GameStatus.PAUSED;
+      clock.pause();
+      eventBus.emit('game:pause', undefined as void);
+      pauseOverlay.style.display = 'flex';
+    } else if (gameState.status === GameStatus.PAUSED && pauseOverlay.style.display === 'flex') {
+      gameState.status = GameStatus.RUNNING;
+      clock.resume();
+      eventBus.emit('game:resume', undefined as void);
+      pauseOverlay.style.display = 'none';
+    }
+  };
+
   const openHelp = () => {
     if (gameState.status === GameStatus.RUNNING) {
       gameState.status = GameStatus.PAUSED;
       clock.pause();
       eventBus.emit('game:pause', undefined as void);
+      startScreen.show(true, false);
+    } else if (gameState.status === GameStatus.PAUSED && pauseOverlay.style.display === 'flex') {
+      // Switch from pause overlay to help screen
+      pauseOverlay.style.display = 'none';
       startScreen.show(true, false);
     } else if (gameState.status === GameStatus.GAME_OVER) {
       startScreen.show(true, true);
@@ -87,6 +107,7 @@ function bootstrap(): void {
       btnHelp: document.getElementById('btn-go-help') as HTMLButtonElement | undefined
     },
     () => {
+      pauseOverlay.style.display = 'none';
       gameState.reset();
       clock.reset();
     },
@@ -128,6 +149,15 @@ function bootstrap(): void {
     eventBus
   );
 
+  // 快捷暂停按钮
+  const btnPause = document.getElementById('btn-toggle-pause');
+  if (btnPause) {
+    btnPause.addEventListener('click', () => {
+      eventBus.emit('ui:click', undefined as void);
+      togglePause();
+    });
+  }
+
   // 快捷说明按钮
   const btnHelp = document.getElementById('btn-open-help');
   if (btnHelp) {
@@ -159,6 +189,7 @@ function bootstrap(): void {
       eventBus.emit('ui:click', undefined as void);
       modal.hide();
       startScreen.hide();
+      pauseOverlay.style.display = 'none';
       gameState.reset();
       clock.reset();
     });
@@ -167,7 +198,7 @@ function bootstrap(): void {
   // 7. 语义输入系统
   new InputManager(
     (action: InputAction) => {
-      // 若处于开始界面或暂停说明中
+      // 若处于开始界面或说明中
       if (startScreen.isVisible()) {
         if (action === InputAction.START_GAME || action === InputAction.P1_HARD_DROP) {
           startScreen.handleAction();
@@ -180,6 +211,32 @@ function bootstrap(): void {
         if (action === InputAction.RESTART) {
           modal.hide();
           startScreen.hide();
+          pauseOverlay.style.display = 'none';
+          gameState.reset();
+          clock.reset();
+          return;
+        }
+        if (action === InputAction.TOGGLE_MUTE) {
+          soundEngine.toggleMute();
+          updateSoundUI();
+          return;
+        }
+        return;
+      }
+
+      // 若处于单纯的暂停遮罩中
+      if (pauseOverlay.style.display === 'flex') {
+        if (action === InputAction.TOGGLE_PAUSE || action === InputAction.START_GAME || action === InputAction.P1_HARD_DROP) {
+          togglePause(); // resume
+          return;
+        }
+        if (action === InputAction.TOGGLE_HELP) {
+          openHelp();
+          return;
+        }
+        if (action === InputAction.RESTART) {
+          modal.hide();
+          pauseOverlay.style.display = 'none';
           gameState.reset();
           clock.reset();
           return;
@@ -203,6 +260,10 @@ function bootstrap(): void {
 
         case InputAction.TOGGLE_HELP:
           openHelp();
+          break;
+
+        case InputAction.TOGGLE_PAUSE:
+          togglePause();
           break;
 
         // P1 俄罗斯方块
@@ -243,8 +304,9 @@ function bootstrap(): void {
         case InputAction.RESTART:
           modal.hide();
           startScreen.hide();
-          gameState.reset();
-          clock.reset();
+          pauseOverlay.style.display = 'none';
+      gameState.reset();
+      clock.reset();
           break;
 
         case InputAction.TOGGLE_MUTE:

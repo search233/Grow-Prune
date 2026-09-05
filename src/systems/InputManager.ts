@@ -80,8 +80,13 @@ export class InputManager {
           break;
 
         case 'KeyH':
-        case 'Escape':
           action = InputAction.TOGGLE_HELP;
+          e.preventDefault();
+          break;
+
+        case 'KeyP':
+        case 'Escape':
+          action = InputAction.TOGGLE_PAUSE;
           e.preventDefault();
           break;
 
