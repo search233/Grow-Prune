@@ -1,3 +1,5 @@
+import { EventBus } from '../systems/EventBus';
+
 export class StartScreen {
   private overlay: HTMLElement;
   private btnStart: HTMLButtonElement;
@@ -8,6 +10,7 @@ export class StartScreen {
   private tabPaneManual?: HTMLElement | null;
   private onStartCallback?: () => void;
   private onResumeCallback?: () => void;
+  private eventBus?: EventBus;
   private isHelpMode = false;
   private isGameOverHelp = false;
 
@@ -24,7 +27,8 @@ export class StartScreen {
     callbacks?: {
       onStart?: () => void;
       onResume?: () => void;
-    }
+    },
+    eventBus?: EventBus
   ) {
     this.overlay = elements.overlay;
     this.btnStart = elements.btnStart;
@@ -35,16 +39,20 @@ export class StartScreen {
     this.tabPaneManual = elements.tabPaneManual || null;
     this.onStartCallback = callbacks?.onStart;
     this.onResumeCallback = callbacks?.onResume;
+    this.eventBus = eventBus;
 
     this.btnStart.addEventListener('click', () => {
+      this.eventBus?.emit('ui:click', undefined as void);
       this.handleAction();
     });
 
     this.tabBtnQuick?.addEventListener('click', () => {
+      this.eventBus?.emit('ui:click', undefined as void);
       this.switchTab('quick');
     });
 
     this.tabBtnManual?.addEventListener('click', () => {
+      this.eventBus?.emit('ui:click', undefined as void);
       this.switchTab('manual');
     });
   }

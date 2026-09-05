@@ -969,13 +969,23 @@
       color: #64748b;
     }
 
+    .start-audio-credit {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+      opacity: 0.85;
+    }
+
     /* ==========================================================================
        5. Game Over 结算蒙层
        ========================================================================== */
-    #game-over-overlay {
+        #game-over-overlay {
       position: absolute;
       inset: 0;
       background: rgba(8, 16, 26, 0.88);
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.2) 2px, rgba(0, 0, 0, 0.2) 4px);
       backdrop-filter: blur(8px);
       display: none;
       flex-direction: column;
@@ -987,6 +997,11 @@
       animation: fadeIn 0.2s ease-out;
     }
 
+    .go-title-wrapper {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
     .go-title {
       font-family: 'Chakra Petch', sans-serif;
       font-size: 32px;
@@ -994,70 +1009,147 @@
       letter-spacing: 2px;
       color: #ef4444;
       text-shadow: 0 0 16px rgba(239, 68, 68, 0.8);
-      margin-bottom: 8px;
+      position: relative;
+    }
+
+
+    .go-reason-wrapper {
+      display: flex;
+      align-items: center;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 4px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .hazard-stripes {
+      width: 24px;
+      height: 100%;
+      background: repeating-linear-gradient(45deg, #ef4444, #ef4444 4px, #000 4px, #000 8px);
+      align-self: stretch;
     }
 
     .go-reason {
+      flex: 1;
       font-family: 'Share Tech Mono', monospace;
       font-size: 13px;
       color: #fca5a5;
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      padding: 5px 14px;
-      border-radius: 16px;
-      margin-bottom: 18px;
+      padding: 6px 10px;
+      font-weight: bold;
     }
 
-    .go-stats {
+    .go-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 24px;
+    }
+
+    .go-stat-card {
+      background: rgba(14, 23, 35, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      position: relative;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .go-stat-card.full-width {
+      grid-column: 1 / -1;
+      padding: 14px;
+      border-color: rgba(56, 189, 248, 0.3);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(14, 23, 35, 0.9) 100%);
+    }
+
+    .stat-label {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10px;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
       font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      color: #cbd5e1;
-      margin-bottom: 22px;
-      line-height: 2;
+      font-size: 18px;
+    }
+    
+    .go-stat-card.full-width .stat-value {
+      font-size: 26px;
+      letter-spacing: 2px;
     }
 
-    .go-stats strong {
-      color: #38bdf8;
-      font-size: 15px;
+    .text-cyan { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.6); }
+    .text-gold { color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.6); }
+    .text-green { color: #4ade80; text-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
+    .text-orange { color: #fb923c; text-shadow: 0 0 8px rgba(251, 146, 60, 0.6); }
+
+    .new-record-badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid #fcd34d;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.8);
+      transform: rotate(12deg);
+      animation: pulse 1.5s infinite;
+      text-shadow: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: rotate(12deg) scale(1); }
+      50% { transform: rotate(12deg) scale(1.1); box-shadow: 0 0 20px rgba(245, 158, 11, 1); }
+      100% { transform: rotate(12deg) scale(1); }
     }
 
     .go-btn-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       width: 100%;
-      max-width: 220px;
+      max-width: 240px;
     }
 
     .restart-btn {
-      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
       color: #ffffff;
-      border: none;
-      padding: 10px 20px;
+      border: 1px solid #fca5a5;
+      padding: 12px 20px;
       font-family: 'Chakra Petch', sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: 1px;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 4px 0 #0369a1, 0 8px 16px rgba(2, 132, 199, 0.5);
+      box-shadow: 0 4px 0 #7f1d1d, 0 8px 16px rgba(220, 38, 38, 0.4);
       transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: 100%;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     .restart-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 5px 0 #0369a1, 0 10px 20px rgba(2, 132, 199, 0.7);
+      box-shadow: 0 5px 0 #7f1d1d, 0 10px 20px rgba(220, 38, 38, 0.6);
       filter: brightness(1.1);
     }
 
     .restart-btn:active {
       transform: translateY(2px);
-      box-shadow: 0 2px 0 #0369a1;
+      box-shadow: 0 2px 0 #7f1d1d;
     }
 
     .go-help-btn {
@@ -1068,15 +1160,10 @@
       font-size: 12px;
       font-weight: 700;
       padding: 8px 16px;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
       box-shadow: 0 3px 0 #0d1622;
       transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: 100%;
     }
 
     .go-help-btn:hover {
@@ -1092,7 +1179,7 @@
     }
 
     .restart-hint {
-      margin-top: 10px;
+      margin-top: 12px;
       font-size: 11px;
       font-family: 'Share Tech Mono', monospace;
       color: #64748b;
@@ -1147,7 +1234,7 @@
       }
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-BDNNqExp.js"></script>
+  <script type="module" crossorigin src="/assets/index-rjop9DPs.js"></script>
 </head>
 <body>
 
@@ -1227,17 +1314,43 @@
     <!-- 中部: 主屏舞台 -->
     <div class="screen-molded-bezel">
       <div class="canvas-screen-inner">
-        <canvas id="gameCanvas" width="336" height="576"></canvas>
+        <canvas id="gameCanvas" width="528" height="576"></canvas>
 
         <!-- Game Over 结算蒙层 -->
-        <div id="game-over-overlay">
-          <div class="go-title">SYSTEM HALT</div>
-          <div id="go-reason-text" class="go-reason">蛇头撞墙</div>
-          <div class="go-stats">
-            最终得分：<strong id="final-score">0000000000</strong><br>
-            蛇身长度：<strong id="final-length">00</strong><br>
-            存活时长：<strong id="final-time">00:00</strong>
+                <div id="game-over-overlay">
+          <div class="go-title-wrapper">
+            <div class="go-title">SYSTEM HALT</div>
           </div>
+          
+          <div class="go-reason-wrapper">
+            <div class="hazard-stripes"></div>
+            <div id="go-reason-text" class="go-reason">蛇头撞墙</div>
+            <div class="hazard-stripes"></div>
+          </div>
+
+          <div class="go-stats-grid">
+            <div class="go-stat-card full-width">
+              <span class="stat-label">FINAL SCORE</span>
+              <strong id="final-score" class="stat-value text-cyan">0000000000</strong>
+              <div id="new-record-badge" class="new-record-badge" style="display: none;">✨ NEW RECORD</div>
+            </div>
+            
+            <div class="go-stat-card">
+              <span class="stat-label">LINES</span>
+              <strong id="final-lines" class="stat-value text-gold">00</strong>
+            </div>
+            
+            <div class="go-stat-card">
+              <span class="stat-label">LENGTH</span>
+              <strong id="final-length" class="stat-value text-green">00</strong>
+            </div>
+            
+            <div class="go-stat-card">
+              <span class="stat-label">TIME</span>
+              <strong id="final-time" class="stat-value text-orange">00:00</strong>
+            </div>
+          </div>
+
           <div class="go-btn-group">
             <button class="restart-btn" id="btn-restart">REBOOT SYSTEM (R)</button>
             <button class="go-help-btn" id="btn-go-help">📖 查看规则说明 (H)</button>
@@ -1289,6 +1402,9 @@
       <div class="pod-actions">
         <button class="side-pod-btn" id="btn-open-help" title="查看操作与规则说明 (H)">
           <span>📖 说明 (H)</span>
+        </button>
+        <button class="side-pod-btn" id="btn-toggle-sound" title="切换声音静音 (M)">
+          <span id="sound-btn-text">🔊 声音开 (M)</span>
         </button>
         <button class="side-pod-btn reset" id="btn-sidebar-reset" title="重新开始游戏 (R)">
           <span>🔄 重置 (R)</span>
@@ -1429,11 +1545,11 @@
           <div class="quick-coop-points">
             <div class="quick-coop-item">
               <span class="item-title">🌟 共生消行</span>
-              <span class="item-desc">任意整行被【方块】与【蛇身】共同填满即可消行，获高额分数！</span>
+              <span class="item-desc">方块与蛇身拼满整行消除！多消阶梯爆发（最高2000分），肉身筑桥每格额外+50分！</span>
             </div>
             <div class="quick-coop-item">
               <span class="item-title"><svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> 断尾爆晶</span>
-              <span class="item-desc">消行切断蛇身不致死，原地爆出高能棱晶（身长+3回血）！</span>
+              <span class="item-desc">消行断尾获修剪补偿（+20分/节），原地爆出高能棱晶（+200分且身长+3回血）！</span>
             </div>
             <div class="quick-coop-item">
               <span class="item-title">⚠️ 生死红线</span>
@@ -1458,7 +1574,7 @@
             </div>
             <div class="control-row">
               <span>软降 / 硬降</span>
-              <span><kbd>S</kbd> / <kbd>Space</kbd></span>
+              <span><kbd>S</kbd> (+1分/格) / <kbd>Space</kbd> (+2分/格)</span>
             </div>
             <ul class="rule-points">
               <li><strong>协同搭桥</strong>：平整堆叠方块，主动为贪吃蛇预留穿插补平的缺口。</li>
@@ -1480,13 +1596,13 @@
             <div class="control-row">
               <span>双重食物</span>
               <span class="gem-item-span">
-                <svg class="game-gem-icon gold" viewBox="0 0 24 24"><use href="#gem-gold-icon"></use></svg> 金钻 (+1) · 
-                <svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> 棱晶 (+3)
+                <svg class="game-gem-icon gold" viewBox="0 0 24 24"><use href="#gem-gold-icon"></use></svg> 金钻 (+20分) · 
+                <svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> 棱晶 (+200分)
               </span>
             </div>
             <ul class="rule-points">
-              <li><strong>填补缺口</strong>：吃 <svg class="game-gem-icon gold" viewBox="0 0 24 24"><use href="#gem-gold-icon"></use></svg> 金钻变长后，主动钻入方块缝隙，补齐整行触发消行。</li>
-              <li><strong>高能棱晶</strong>：消行后原地爆出 <svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> 棱晶，身长 +3 并奖励巨额分数，回血关键！</li>
+              <li><strong>填补缺口</strong>：吃 <svg class="game-gem-icon gold" viewBox="0 0 24 24"><use href="#gem-gold-icon"></use></svg> 金钻变长后，主动钻入方块缝隙，肉身筑桥每格额外奖励 +50 分！</li>
+              <li><strong>高能棱晶</strong>：消行后原地爆出 <svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> 棱晶，身长 +3 并奖励 200 巨额分数，回血关键！</li>
               <li><strong class="danger-tag">⚠️ 碰撞死线</strong>：蛇头撞墙、撞静止方块、自咬或迎面撞下落方块立即死亡！</li>
             </ul>
           </section>
@@ -1495,20 +1611,20 @@
           <section class="rule-card card-coop full-width">
             <div class="card-header">
               <span>⚡</span>
-              <h3>核心机制：共生消行与断尾修剪 (Grow & Prune)</h3>
+              <h3>核心机制：共生消行与动作激励 (Grow & Prune Scoring)</h3>
             </div>
             <ul class="rule-points highlight">
               <li>
-                <strong>🌟 共生消行 (Symbiotic Clear)</strong>：
-                任意整行只要被【方块】与【蛇身】拼满（无空格）即刻消除，整行粉碎并获得大量积分！
+                <strong>🌟 共生消行与肉身筑桥 (Symbiotic Clear)</strong>：
+                任意整行只要被【方块】与【蛇身】拼满即刻消除！基础分呈阶梯非线性爆发（1行 200 / 2行 500 / 3行 1000 / 4行 2000 分）；<strong>被消行中每包含 1 个蛇身格子额外奖励 +50 分</strong>！
               </li>
               <li>
                 <strong>✂️ 断尾修剪与反哺 (Prune & Rebirth)</strong>：
-                消行穿透蛇身会切除被消除行处的尾部，但断尾处会<strong>原地凝结爆出 <svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> 高能棱晶（+3身长）</strong>，反哺贪吃蛇迅速重塑身躯！
+                消行切断蛇身获得修剪补偿（<strong>每切断 1 节 +20 分</strong>），断尾处原地爆出 <svg class="game-gem-icon cyan" viewBox="0 0 24 24"><use href="#gem-cyan-icon"></use></svg> <strong>高能棱晶（+200 分与 +3 身长）</strong>，反哺贪吃蛇迅速重塑身躯！
               </li>
               <li>
-                <strong>💥 下落穿透判定 (Smash Rules)</strong>：
-                下落中的方块砸中蛇身中段仅切断尾部（转危为安）；唯独<strong>直接砸中蛇头判定失败</strong>！
+                <strong>💥 下落穿透与极速降落</strong>：
+                下落方块硬降每格 <strong>+2 分</strong>、软降每格 <strong>+1 分</strong>；砸中蛇身中段触发断尾补偿；唯独<strong>直接砸中蛇头判定失败</strong>！
               </li>
             </ul>
           </section>
@@ -1518,7 +1634,8 @@
       <!-- 启动按钮与快捷提示 -->
       <div class="start-action-bar">
         <button id="btn-start-game" class="start-btn">START GAME (开始游戏)</button>
-        <div class="start-hint-text">按 <kbd>Space</kbd> 或 <kbd>Enter</kbd> 快速开始 • 游戏中随时按 <kbd>H</kbd> 呼出说明</div>
+        <div class="start-hint-text">按 <kbd>Space</kbd> 或 <kbd>Enter</kbd> 快速开始 • 随时按 <kbd>H</kbd> 呼出说明 • <kbd>M</kbd> 开关声音</div>
+        <div class="start-audio-credit">🎵 BGM: "Puzzle Pieces" by Abstraction (CC0)</div>
       </div>
     </div>
   </div>

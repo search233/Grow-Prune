@@ -84,6 +84,11 @@ export class InputManager {
           action = InputAction.TOGGLE_HELP;
           e.preventDefault();
           break;
+
+        case 'KeyM':
+          action = InputAction.TOGGLE_MUTE;
+          e.preventDefault();
+          break;
       }
 
       if (action && this.handler) {

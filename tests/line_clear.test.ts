@@ -42,6 +42,9 @@ describe('CollisionEngine - Symbiotic Line Clear', () => {
     expect(result.bonusFoodPoints.length).toBe(1);
     const bonusPt = result.bonusFoodPoints[0];
     expect(grid.get(bonusPt.x, bonusPt.y)).toBe(CellType.BONUS_FOOD);
+
+    // 5. Symbiotic snake segments on cleared line should be 3
+    expect(result.symbioticSegmentsCount).toBe(3);
   });
 
   it('should NOT clear line if snake head is on that line (head protection)', () => {

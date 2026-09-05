@@ -22,6 +22,7 @@ export interface SymbioticClearResult {
   severedSegments: Point[];
   bonusFoodPoints: Point[];
   snakeCrushedByFallingBlock: boolean;
+  symbioticSegmentsCount: number;
 }
 
 export class CollisionEngine {
@@ -141,9 +142,13 @@ export class CollisionEngine {
         clearedRows: [],
         severedSegments: [],
         bonusFoodPoints: [],
-        snakeCrushedByFallingBlock: false
+        snakeCrushedByFallingBlock: false,
+        symbioticSegmentsCount: 0
       };
     }
+
+    // 统计参与本次消行的蛇身节点数（肉身筑桥共生数）
+    const symbioticSegmentsCount = snakeBody.filter(s => clearedRows.includes(s.y)).length;
 
     // 1. 断尾切除：切除穿过被消行的蛇身节点（保留靠近蛇头一端）
     const segments = snake.getSegments();
@@ -218,7 +223,8 @@ export class CollisionEngine {
       clearedRows,
       severedSegments,
       bonusFoodPoints,
-      snakeCrushedByFallingBlock
+      snakeCrushedByFallingBlock,
+      symbioticSegmentsCount
     };
   }
 

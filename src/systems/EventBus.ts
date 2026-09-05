@@ -4,17 +4,29 @@ import { Tetromino } from '../core/Tetromino';
 export interface GameEventMap {
   'snake:move': { head: Point };
   'snake:eat': { type: CellType.FOOD | CellType.BONUS_FOOD; pos: Point; growth: number; points: number };
-  'snake:severed': { index: number; severedSegments: Point[] };
+  'snake:severed': { index: number; severedSegments: Point[]; points?: number };
   'piece:move': { piece: Tetromino };
+  'piece:shift': { dx: number };
   'piece:rotate': { piece: Tetromino };
   'piece:lock': { piece: Tetromino; cells: Point[] };
-  'piece:hard_drop': { landingY: number; cells: Point[] };
-  'line:cleared': { rows: number[]; count: number; bonusFoods: Point[] };
+  'piece:hard_drop': { landingY: number; cells: Point[]; dropDistance?: number; points?: number };
+  'line:cleared': {
+    rows: number[];
+    count: number;
+    bonusFoods: Point[];
+    points?: number;
+    basePoints?: number;
+    symbioticBonus?: number;
+    pruneBonus?: number;
+  };
   'game:over': { reason: string };
   'game:start': void;
   'game:restart': void;
+  'game:pause': void;
+  'game:resume': void;
   'score:update': { score: number };
   'time:update': { seconds: number };
+  'ui:click': void;
 }
 
 type EventCallback<T> = (payload: T) => void;

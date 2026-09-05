@@ -1,6 +1,6 @@
 import { TetrominoType } from './types';
 
-export const COLS = 14;
+export const COLS = 22;
 export const ROWS = 24;
 export const BLOCK_SIZE = 24;
 
@@ -10,11 +10,16 @@ export const TETRIS_NORMAL_INTERVAL_MS = 600;   // 方块普通下落 0.6s
 export const TETRIS_SOFT_DROP_INTERVAL_MS = 50; // 软降加速 0.05s
 export const TETRIS_LOCK_DELAY_MS = 500;        // 触底锁定延迟 0.5s（现代 Tetris 核心规范）
 
-// 计分配置
-export const SCORE_PER_SECOND_MULTIPLIER = 10;
-export const SCORE_EAT_FOOD = 20;
-export const SCORE_EAT_BONUS_FOOD = 100;
-export const SCORE_LINE_CLEAR = 200;
+// 计分配置（方案一：共生深度与动作激励型）
+export const SCORE_PER_SECOND_MULTIPLIER = 2;       // 存活秒分平衡：2分/节/秒（根治挂机刷分倒挂）
+export const SCORE_EAT_FOOD = 20;                   // 基础食物得分
+export const SCORE_EAT_BONUS_FOOD = 200;            // 高能棱晶回收得分（100基础+100回收加成）
+export const SCORE_LINE_CLEAR = 200;                // 单行消除保底参考分
+export const SCORE_LINE_CLEAR_TABLE = [0, 200, 500, 1000, 2000]; // 阶梯多行消除分 (1~4行非线性爆发)
+export const SCORE_SYMBIOTIC_SEGMENT_BONUS = 50;    // 肉身筑桥加成：参与消行的蛇身每格额外奖50分
+export const SCORE_SEVERED_SEGMENT_BONUS = 20;      // 断尾修剪补偿：切除的蛇身每节奖20分
+export const SCORE_HARD_DROP_PER_CELL = 2;          // 硬降每格高度加分 (经典 Tetris 规范)
+export const SCORE_SOFT_DROP_PER_CELL = 1;          // 软降每格高度加分
 
 // 7 种俄罗斯方块原型配置
 export interface TetrominoDefinition {

@@ -1,8 +1,12 @@
 import {
   SCORE_EAT_BONUS_FOOD,
   SCORE_EAT_FOOD,
-  SCORE_LINE_CLEAR,
+  SCORE_HARD_DROP_PER_CELL,
+  SCORE_LINE_CLEAR_TABLE,
   SCORE_PER_SECOND_MULTIPLIER,
+  SCORE_SEVERED_SEGMENT_BONUS,
+  SCORE_SOFT_DROP_PER_CELL,
+  SCORE_SYMBIOTIC_SEGMENT_BONUS,
   TETRIS_LOCK_DELAY_MS
 } from './Constants';
 import { CollisionEngine } from './CollisionEngine';
@@ -11,6 +15,7 @@ import { Snake } from './Snake';
 import { RandomBag, Tetromino } from './Tetromino';
 import { CellType, GameStats, GameStatus, TetrominoType } from './types';
 import { EventBus } from '../systems/EventBus';
+import { ScoreManager } from './ScoreManager';
 
 export class GameState {
   public grid: Grid;
@@ -19,8 +24,12 @@ export class GameState {
   public nextPieceType: TetrominoType;
   public randomBag: RandomBag;
   public status: GameStatus = GameStatus.READY;
-  public stats: GameStats;
   public eventBus: EventBus;
+
+  private scoreManager: ScoreManager;
+  public get stats(): GameStats {
+    return this.scoreManager.stats;
+  }
 
   public isSoftDropping = false;
   private lockDelayTimer = 0;
@@ -32,23 +41,7 @@ export class GameState {
     this.snake = new Snake();
     this.randomBag = new RandomBag();
     this.nextPieceType = this.randomBag.next();
-
-    let storedBest = 0;
-    try {
-      if (typeof localStorage !== 'undefined') {
-        storedBest = parseInt(localStorage.getItem('tetrisnake_highscore') || '0', 10) || 0;
-      }
-    } catch {
-      // ignore storage errors
-    }
-
-    this.stats = {
-      score: 0,
-      snakeLength: 3,
-      linesCleared: 0,
-      survivalSeconds: 0,
-      highScore: storedBest
-    };
+    this.scoreManager = new ScoreManager(eventBus);
   }
 
   public prepare(): void {
@@ -62,10 +55,7 @@ export class GameState {
     this.lockDelayTimer = 0;
     this.isTouchingGround = false;
 
-    this.stats.score = 0;
-    this.stats.snakeLength = this.snake.length;
-    this.stats.linesCleared = 0;
-    this.stats.survivalSeconds = 0;
+    this.scoreManager.prepare(this.snake.length);
 
     // 刷出第一个方块
     this.spawnNextPiece();
@@ -105,7 +95,7 @@ export class GameState {
     if (check.eatType === CellType.FOOD) {
       this.snake.addGrowth(1);
       this.grid.set(check.target.x, check.target.y, CellType.EMPTY);
-      this.addScore(SCORE_EAT_FOOD);
+      this.scoreManager.addScore(SCORE_EAT_FOOD);
       this.eventBus.emit('snake:eat', {
         type: CellType.FOOD,
         pos: check.target,
@@ -118,7 +108,7 @@ export class GameState {
     } else if (check.eatType === CellType.BONUS_FOOD) {
       this.snake.addGrowth(3);
       this.grid.set(check.target.x, check.target.y, CellType.EMPTY);
-      this.addScore(SCORE_EAT_BONUS_FOOD);
+      this.scoreManager.addScore(SCORE_EAT_BONUS_FOOD);
       this.eventBus.emit('snake:eat', {
         type: CellType.BONUS_FOOD,
         pos: check.target,
@@ -149,6 +139,11 @@ export class GameState {
       this.isTouchingGround = false;
       this.lockDelayTimer = 0;
 
+      // 软降得分奖励
+      if (this.isSoftDropping) {
+        this.scoreManager.addScore(SCORE_SOFT_DROP_PER_CELL);
+      }
+
       // 检查下落这格是否砸中蛇
       this.resolvePieceSmash(this.currentPiece.getOccupiedCells());
       this.eventBus.emit('piece:move', { piece: this.currentPiece });
@@ -178,6 +173,7 @@ export class GameState {
 
       this.resolvePieceSmash(this.currentPiece.getOccupiedCells());
       this.eventBus.emit('piece:move', { piece: this.currentPiece });
+      this.eventBus.emit('piece:shift', { dx });
       return true;
     }
     return false;
@@ -220,9 +216,20 @@ export class GameState {
     this.resolvePieceSmash(trajectoryCells);
     if (this.status !== GameStatus.RUNNING) return;
 
+    const dropDistance = Math.max(0, landingY - this.currentPiece.y);
+    const dropPoints = dropDistance * SCORE_HARD_DROP_PER_CELL;
+    if (dropPoints > 0) {
+      this.scoreManager.addScore(dropPoints);
+    }
+
     this.currentPiece.y = landingY;
     const finalCells = this.currentPiece.getOccupiedCells();
-    this.eventBus.emit('piece:hard_drop', { landingY, cells: finalCells });
+    this.eventBus.emit('piece:hard_drop', {
+      landingY,
+      cells: finalCells,
+      dropDistance,
+      points: dropPoints
+    });
 
     this.lockCurrentPiece();
   }
@@ -278,11 +285,15 @@ export class GameState {
     // 5. 执行共生消行检测（与 tickSnake 共用）
     this.processSymbioticLineClear();
 
-    // 6. 全局食物存量保底机制：确保场上永远至少有一颗普通食物，彻底杜绝死锁
-    this.ensureFoodSupply();
+    if ((this.status as GameStatus) === GameStatus.GAME_OVER) return;
 
-    // 7. 生成下一方块
+    // 6. 生成下一方块 (先生成才能获取到它的下落投影，避免食物刷在方块落点)
     this.spawnNextPiece();
+
+    if ((this.status as GameStatus) === GameStatus.GAME_OVER) return;
+
+    // 7. 全局食物存量保底机制：确保场上永远至少有一颗普通食物，彻底杜绝死锁
+    this.ensureFoodSupply();
   }
 
   /**
@@ -292,20 +303,39 @@ export class GameState {
     const clearResult = CollisionEngine.checkSymbioticLineClear(this.grid, this.snake);
     if (clearResult.clearedRows.length === 0) return;
 
-    this.stats.linesCleared += clearResult.clearedRows.length;
-    this.addScore(clearResult.clearedRows.length * SCORE_LINE_CLEAR);
+    const count = clearResult.clearedRows.length;
+    this.stats.linesCleared += count;
+
+    // 1. 基础阶梯消行分 (1行 200, 2行 500, 3行 1000, 4行 2000，超过4行按每行500)
+    const basePoints = count < SCORE_LINE_CLEAR_TABLE.length
+      ? SCORE_LINE_CLEAR_TABLE[count]
+      : count * 500;
+
+    // 2. 共生肉身筑桥加成（被消除行中包含的蛇身节点数 * 50）
+    const symbioticBonus = (clearResult.symbioticSegmentsCount || 0) * SCORE_SYMBIOTIC_SEGMENT_BONUS;
+
+    // 3. 断尾修剪补偿分（切除的蛇身节点数 * 20）
+    const pruneBonus = clearResult.severedSegments.length * SCORE_SEVERED_SEGMENT_BONUS;
+
+    const totalLinePoints = basePoints + symbioticBonus + pruneBonus;
+    this.scoreManager.addScore(totalLinePoints);
 
     this.eventBus.emit('line:cleared', {
       rows: clearResult.clearedRows,
       count: clearResult.clearedRows.length,
-      bonusFoods: clearResult.bonusFoodPoints
+      bonusFoods: clearResult.bonusFoodPoints,
+      points: totalLinePoints,
+      basePoints,
+      symbioticBonus,
+      pruneBonus
     });
 
     if (clearResult.severedSegments.length > 0) {
       this.stats.snakeLength = this.snake.length;
       this.eventBus.emit('snake:severed', {
         index: this.snake.length,
-        severedSegments: clearResult.severedSegments
+        severedSegments: clearResult.severedSegments,
+        points: pruneBonus
       });
     }
 
@@ -373,9 +403,14 @@ export class GameState {
 
     if (smash.hitBody && smash.severedSegments.length > 0) {
       this.stats.snakeLength = this.snake.length;
+      const pruneBonus = smash.severedSegments.length * SCORE_SEVERED_SEGMENT_BONUS;
+      if (pruneBonus > 0) {
+        this.scoreManager.addScore(pruneBonus);
+      }
       this.eventBus.emit('snake:severed', {
         index: smash.minHitIndex!,
-        severedSegments: smash.severedSegments
+        severedSegments: smash.severedSegments,
+        points: pruneBonus
       });
     }
   }
@@ -387,23 +422,8 @@ export class GameState {
     if (this.status !== GameStatus.RUNNING) return;
 
     this.stats.survivalSeconds++;
-    this.addScore(this.snake.length * SCORE_PER_SECOND_MULTIPLIER);
+    this.scoreManager.addScore(this.snake.length * SCORE_PER_SECOND_MULTIPLIER);
     this.eventBus.emit('time:update', { seconds: this.stats.survivalSeconds });
-  }
-
-  public addScore(points: number): void {
-    this.stats.score += points;
-    if (this.stats.score > this.stats.highScore) {
-      this.stats.highScore = this.stats.score;
-      try {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('tetrisnake_highscore', this.stats.highScore.toString());
-        }
-      } catch {
-        // ignore storage errors
-      }
-    }
-    this.eventBus.emit('score:update', { score: this.stats.score });
   }
 
   public triggerGameOver(reason: string): void {

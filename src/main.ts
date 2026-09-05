@@ -64,6 +64,7 @@ function bootstrap(): void {
     if (gameState.status === GameStatus.RUNNING) {
       gameState.status = GameStatus.PAUSED;
       clock.pause();
+      eventBus.emit('game:pause', undefined as void);
       startScreen.show(true, false);
     } else if (gameState.status === GameStatus.GAME_OVER) {
       startScreen.show(true, true);
@@ -78,8 +79,10 @@ function bootstrap(): void {
       overlay: document.getElementById('game-over-overlay')!,
       reasonText: document.getElementById('go-reason-text')!,
       finalScore: document.getElementById('final-score')!,
+      finalLines: document.getElementById('final-lines')!,
       finalLength: document.getElementById('final-length')!,
       finalTime: document.getElementById('final-time')!,
+      newRecordBadge: document.getElementById('new-record-badge')!,
       btnRestart: document.getElementById('btn-restart') as HTMLButtonElement,
       btnHelp: document.getElementById('btn-go-help') as HTMLButtonElement | undefined
     },
@@ -118,21 +121,42 @@ function bootstrap(): void {
         if (gameState.status === GameStatus.PAUSED) {
           gameState.status = GameStatus.RUNNING;
           clock.resume();
+          eventBus.emit('game:resume', undefined as void);
         }
       }
-    }
+    },
+    eventBus
   );
 
   // 快捷说明按钮
   const btnHelp = document.getElementById('btn-open-help');
   if (btnHelp) {
-    btnHelp.addEventListener('click', openHelp);
+    btnHelp.addEventListener('click', () => {
+      eventBus.emit('ui:click', undefined as void);
+      openHelp();
+    });
+  }
+
+  // 侧栏静音/声音切换按钮
+  const btnToggleSound = document.getElementById('btn-toggle-sound');
+  const soundBtnText = document.getElementById('sound-btn-text');
+  const updateSoundUI = () => {
+    if (soundBtnText) {
+      soundBtnText.textContent = soundEngine.muted ? '🔇 声音关 (M)' : '🔊 声音开 (M)';
+    }
+  };
+  if (btnToggleSound) {
+    btnToggleSound.addEventListener('click', () => {
+      soundEngine.toggleMute();
+      updateSoundUI();
+    });
   }
 
   // 侧栏快捷重置按钮
   const btnSidebarReset = document.getElementById('btn-sidebar-reset');
   if (btnSidebarReset) {
     btnSidebarReset.addEventListener('click', () => {
+      eventBus.emit('ui:click', undefined as void);
       modal.hide();
       startScreen.hide();
       gameState.reset();
@@ -158,6 +182,11 @@ function bootstrap(): void {
           startScreen.hide();
           gameState.reset();
           clock.reset();
+          return;
+        }
+        if (action === InputAction.TOGGLE_MUTE) {
+          soundEngine.toggleMute();
+          updateSoundUI();
           return;
         }
         return;
@@ -210,12 +239,17 @@ function bootstrap(): void {
           gameState.snake.setDirection({ x: 1, y: 0 });
           break;
 
-        // 重启
+        // 重启与静音
         case InputAction.RESTART:
           modal.hide();
           startScreen.hide();
           gameState.reset();
           clock.reset();
+          break;
+
+        case InputAction.TOGGLE_MUTE:
+          soundEngine.toggleMute();
+          updateSoundUI();
           break;
       }
     },
