@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Production build & packages
+dist/
+dist-ssr/
+*.zip
+
+# Vite & Vitest cache
+.vite/
+.vitest/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

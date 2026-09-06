@@ -429,13 +429,16 @@ export class SoundEngine {
   /**
    * 初始化 BGM 实例并连接至 bgmBus (通过 Master Limiter 与 Master Gain)
    */
-  public initBGM(src = '/assets/audio/puzzle-pieces.mp3'): void {
+  public initBGM(src?: string): void {
     if (typeof window === 'undefined') return;
     this.init();
 
+    const defaultSrc = `${(import.meta.env?.BASE_URL || './').replace(/\/$/, '')}/assets/audio/puzzle-pieces.mp3`;
+    const audioSrc = src ?? defaultSrc;
+
     if (!this.bgmAudio && typeof Audio !== 'undefined') {
       try {
-        this.bgmAudio = new Audio(src);
+        this.bgmAudio = new Audio(audioSrc);
         this.bgmAudio.loop = true;
         this.bgmAudio.preload = 'auto';
       } catch {
